@@ -55,7 +55,7 @@ def parse_ofx():
 
             for transaction in account.statement.transactions:
                 transaction_data = {
-                    "payee": transaction.payee,
+                    "payee": float(transaction.payee),
                     "type": transaction.type,
                     "date": str(transaction.date),
                     "user_date": str(transaction.user_date),
