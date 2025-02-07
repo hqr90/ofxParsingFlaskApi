@@ -49,7 +49,7 @@ def parse_ofx():
                     "end_date": str(account.statement.end_date),
                     "balance": account.statement.balance,
                 },
-                "transactions": []
+                "transactions": {}
             }
 
             for transaction in account.statement.transactions:
@@ -59,13 +59,12 @@ def parse_ofx():
                     "date": str(transaction.date),
                     "user_date": str(transaction.user_date),
                     "amount": transaction.amount,
-                    "id": transaction.id,
                     "memo": transaction.memo,
                     "sic": transaction.sic,
                     "mcc": transaction.mcc,
                     "checknum": transaction.checknum
                 }
-                account_data["transactions"].append(transaction_data)
+                account_data["transactions"][transaction.id] = transaction_data
 
             result.append(account_data)
 
