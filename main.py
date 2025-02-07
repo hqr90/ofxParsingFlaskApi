@@ -33,7 +33,8 @@ def parse_ofx():
 
         # A resposta final de todos os dados
         result = []
-
+        def str_to_float(value):
+            return float(value.replace(",", "."))
         # Em alguns casos, ofx.accounts é uma lista de várias contas
         # Se for apenas uma, pode ser ofx.account (dependendo da versão do ofxparse).
         for account in ofx.accounts:
@@ -55,7 +56,7 @@ def parse_ofx():
 
             for transaction in account.statement.transactions:
                 transaction_data = {
-                    "payee": float(transaction.payee),
+                    "payee": str_to_float(transaction.payee),
                     "type": transaction.type,
                     "date": str(transaction.date),
                     "user_date": str(transaction.user_date),
