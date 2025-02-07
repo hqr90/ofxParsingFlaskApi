@@ -81,4 +81,4 @@ if __name__ == '__main__':
     # Railway definirá a porta via variável de ambiente $PORT,
     # então aqui podemos ficar fixo em 5000, pois em produção
     # o Railway já injeta esse valor.
-    app.run(debug=False, host='0.0.0.0', port=5000)
+    app.run(debug=True, port=os.getenv("PORT", default=5000))
