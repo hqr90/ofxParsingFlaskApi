@@ -60,7 +60,7 @@ def parse_ofx():
                     "date": str(transaction.date),
                     "user_date": str(transaction.user_date),
                     "amount": str_to_float(str(transaction.amount)),
-                    "category": str(transaction.memo).split(" - ")[0]
+                    "category": str(transaction.memo).split(" - ")[0],
                     "memo": transaction.memo,
                     "describe": str(transaction.memo) + " " + str(transaction.amount),
                     "sic": transaction.sic,
