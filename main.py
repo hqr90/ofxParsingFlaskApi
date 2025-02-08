@@ -62,7 +62,7 @@ def parse_ofx():
                     "amount": str_to_float(str(transaction.amount)),
                     "category": str(transaction.memo).split(" - ")[0]
                     "memo": transaction.memo,
-                    "describe": str(transaction.memo) + str(transaction.amount),
+                    "describe": str(transaction.memo) + " " + str(transaction.amount),
                     "sic": transaction.sic,
                     "mcc": transaction.mcc,
                     "checknum": transaction.checknum
