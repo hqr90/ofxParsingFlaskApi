@@ -68,12 +68,7 @@ def parse_ofx():
                     "checknum": transaction.checknum
                 }
                 account_data["transactions"][transaction.id] = transaction_data
-            for transaction in account.statement.transactions:
-              describe = str(transaction.memo)
-              category = {"category": str(transaction.memo).split(" - ")[0],
-                          "amount": str_to_float(str(transaction.amount))}
-              categories[describe] = category
-            account_data["categories"]
+                
             result.append(account_data)
 
         return jsonify(result), 200
