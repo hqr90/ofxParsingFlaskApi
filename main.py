@@ -51,21 +51,29 @@ def parse_ofx():
                 },
                 "transactions": {}
             }
-
+            def str_to_float(value:str):
+                 return float(value.replace(",", "."))
             for transaction in account.statement.transactions:
                 transaction_data = {
                     "payee": transaction.payee,
                     "type": transaction.type,
                     "date": str(transaction.date),
                     "user_date": str(transaction.user_date),
-                    "amount": transaction.amount,
+                    "amount": str_to_float(str(transaction.amount)),
+                    "category": str(transaction.memo).split(" - ")[0]
                     "memo": transaction.memo,
+                    "describe": str(transaction.memo) + str(transaction.amount),
                     "sic": transaction.sic,
                     "mcc": transaction.mcc,
                     "checknum": transaction.checknum
                 }
                 account_data["transactions"][transaction.id] = transaction_data
-
+            for transaction in account.statement.transactions:
+              describe = str(transaction.memo)
+              category = {"category": str(transaction.memo).split(" - ")[0],
+                          "amount": str_to_float(str(transaction.amount))}
+              categories[describe] = category
+            account_data["categories"]
             result.append(account_data)
 
         return jsonify(result), 200
