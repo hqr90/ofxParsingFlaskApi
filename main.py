@@ -4,7 +4,7 @@ from io import BytesIO
 from functools import wraps
 from flask import Flask, request, jsonify
 from ofxparse import OfxParser
-
+import re
 
 app = Flask(__name__)
 # ------------------------------------------
@@ -54,10 +54,7 @@ def parse_ofx():
         return jsonify({"error": "Campo 'ofx_base64' não encontrado no JSON"}), 400
 
     ofx_base64 = data['ofx_base64']
-    notInclude = [
-        "Pagamento de fatura",
-        "Pagamento recebido"
-    ]
+
     try:
         # Decodifica o Base64 em bytes
         ofx_bytes = base64.b64decode(ofx_base64)
@@ -89,7 +86,16 @@ def parse_ofx():
             # Função auxiliar para converter string em float
             def str_to_float(value: str):
                 return float(value.replace(",", "."))
+            def extrair_parcela(texto):
+                padrao = r"Parcela (\d+)/(\d+)"
+                match = re.search(padrao, texto)
 
+                if match:
+                    parcela_atual = int(match.group(1))
+                    total_parcelas = int(match.group(2))
+                    return parcela_atual, total_parcelas
+                return None, None
+                
             for transaction in account.statement.transactions:
 
                 parcela_atual, total_parcelas = extrair_parcela(transaction.memo)
