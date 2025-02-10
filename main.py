@@ -88,6 +88,7 @@ def parse_ofx():
 
             for transaction in account.statement.transactions:
                 transaction_data = {
+                    "id": transaction.id,
                     "date": str(transaction.date),
                     "amount": str_to_float(str(transaction.amount)),
                     "category": str(transaction.memo).split(" - ")[0],
