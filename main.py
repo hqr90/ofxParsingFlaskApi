@@ -1,10 +1,4 @@
-import base64
-import os
-from io import BytesIO
-from functools import wraps
-from flask import Flask, request, jsonify
-from ofxparse import OfxParser
-print("Variáveis de ambiente:", os.environ)
+
 app = Flask(__name__)
 # ------------------------------------------
 # Definição da SECRET KEY (token de acesso)
@@ -53,7 +47,10 @@ def parse_ofx():
         return jsonify({"error": "Campo 'ofx_base64' não encontrado no JSON"}), 400
 
     ofx_base64 = data['ofx_base64']
-
+    notInclude = [
+        "Pagamento de fatura",
+        "Pagamento recebido"
+    ]
     try:
         # Decodifica o Base64 em bytes
         ofx_bytes = base64.b64decode(ofx_base64)
@@ -64,10 +61,7 @@ def parse_ofx():
 
         # A resposta final de todos os dados
         result = []
-        notInclude = [
-                        "Pagamento de fatura",
-                        "Pagamento recebido"
-                     ]
+
         # Em alguns casos, ofx.accounts é uma lista de várias contas
         # Se for apenas uma, pode ser ofx.account (dependendo da versão do ofxparse).
         for account in ofx.accounts:
@@ -89,7 +83,22 @@ def parse_ofx():
             def str_to_float(value: str):
                 return float(value.replace(",", "."))
 
+            def extrair_parcela(texto):
+                padrao = r"Parcela (\d+)/(\d+)"
+                match = re.search(padrao, texto)
+
+                if match:
+                    parcela_atual = int(match.group(1))
+                    total_parcelas = int(match.group(2))
+                    return parcela_atual, total_parcelas
+                return None, None
+
             for transaction in account.statement.transactions:
+
+                parcela_atual, total_parcelas = extrair_parcela(transaction.memo)
+
+                print(f"Parcela {parcela_atual} de {total_parcelas}")
+
                 transaction_data = {
                     "id": transaction.id,
                     "date": str(transaction.date),
@@ -97,9 +106,17 @@ def parse_ofx():
                     "category": str(transaction.memo).split(" - ")[0],
                     "memo": transaction.memo,
                 }
-                account_data["transactions"][transaction.id] = transaction_data
+                isNotInclude = True
+                
+                for item in notInclude:
+                    if item in transaction.memo:
+                        isNotInclude = False
+                        break
+                
+                if(isNotInclude):
+                    account_data["transactions"][transaction.id] = transaction_data
 
-            if(str(transaction.memo) not in notInclude):
+            if(len(account_data["transactions"]) > 0):
                 result.append(account_data)
 
         return jsonify(result), 200
