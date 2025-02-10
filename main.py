@@ -4,15 +4,18 @@ from io import BytesIO
 from functools import wraps
 from flask import Flask, request, jsonify
 from ofxparse import OfxParser
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
-
 # ------------------------------------------
 # Definição da SECRET KEY (token de acesso)
 # ------------------------------------------
 # Em produção (por exemplo, no Railway), defina a variável de ambiente MY_SECRET_TOKEN
 # através do painel de configurações. Dessa forma, o valor será injetado no ambiente.
 MY_SECRET_TOKEN = os.getenv("MY_SECRET_TOKEN")
+
 if not MY_SECRET_TOKEN:
     raise Exception("A variável de ambiente MY_SECRET_TOKEN não foi definida. Configure-a no Railway.")
 
