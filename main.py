@@ -110,20 +110,11 @@ def parse_ofx():
                     "id": transaction.id,
                     "date": str(transaction.date),
                     "amount": str_to_float(str(transaction.amount)),
-                    "category": str(transaction.memo).split(" - ")[0],
                     "memo": transaction.memo,
                 }
-                isNotInclude = True
-                
-                for item in notInclude:
-                    if item in transaction.memo:
-                        isNotInclude = False
-                        break
-                
-                if(isNotInclude):
-                    account_data["transactions"][transaction.id] = transaction_data
 
-            if(len(account_data["transactions"]) > 0):
+                account_data["transactions"][transaction.id] = transaction_data
+
                 result.append(account_data)
 
         return jsonify(result), 200
