@@ -113,7 +113,13 @@ def parse_ofx():
                     "memo": transaction.memo,
                 }
 
-                account_data["transactions"][transaction.id] = transaction_data
+                pagFat = "Pagamento de fatura"
+                pagRec = "Pagamento recebido"
+                
+                isNotInclude = pagFat not in transaction.memo and pagRec not in transaction.memo
+   
+                if(isNotInclude):
+                    account_data["transactions"][transaction.id] = transaction_data
 
                 result.append(account_data)
 
