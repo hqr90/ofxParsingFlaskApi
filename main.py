@@ -10,13 +10,11 @@ app = Flask(__name__)
 # ------------------------------------------
 # Definição da SECRET KEY (token de acesso)
 # ------------------------------------------
-# Em produção, você deve usar uma variável de ambiente:
-# export MY_SECRET_TOKEN='uma_chave_bem_grande_e_secreta'
-# gere uma chave aleatória:
-# print(os.urandom(24).hex())
-
-MY_SECRET_TOKEN = "a7d88d0a141163f171cb27d6fa5d000969e6c490a01dd7c4"
-
+# Em produção (por exemplo, no Railway), defina a variável de ambiente MY_SECRET_TOKEN
+# através do painel de configurações. Dessa forma, o valor será injetado no ambiente.
+MY_SECRET_TOKEN = os.getenv("MY_SECRET_TOKEN")
+if not MY_SECRET_TOKEN:
+    raise Exception("A variável de ambiente MY_SECRET_TOKEN não foi definida. Configure-a no Railway.")
 
 # ------------------------------------------
 # Decorador para exigir o token no cabeçalho
@@ -26,14 +24,11 @@ def require_auth(func):
     def wrapper(*args, **kwargs):
         # Pega o token que vem no cabeçalho "X-API-KEY"
         token = request.headers.get("X-API-KEY")
-
         # Verifica se está presente e se é igual ao configurado
         if not token or token != MY_SECRET_TOKEN:
             return jsonify({"error": "Unauthorized"}), 401
-
         # Se estiver tudo certo, executa a função original
         return func(*args, **kwargs)
-
     return wrapper
 
 # Rota inicial só para teste
@@ -75,8 +70,6 @@ def parse_ofx():
         for account in ofx.accounts:
             account_data = {
                 "account_id": account.account_id,
-                # "routing_number": account.routing_number,
-                # "branch_id": account.branch_id,
                 "institution": {
                     "organization": account.institution.organization if account.institution else None,
                     "fid": account.institution.fid if account.institution else None
@@ -95,17 +88,10 @@ def parse_ofx():
 
             for transaction in account.statement.transactions:
                 transaction_data = {
-                    # "payee": transaction.payee,
-                    # "type": transaction.type,
                     "date": str(transaction.date),
-                    # "user_date": str(transaction.user_date),
                     "amount": str_to_float(str(transaction.amount)),
                     "category": str(transaction.memo).split(" - ")[0],
                     "memo": transaction.memo,
-                    # "describe": str(transaction.memo) + " " + str(transaction.amount),
-                    # "sic": transaction.sic,
-                    # "mcc": transaction.mcc,
-                    # "checknum": transaction.checknum
                 }
                 account_data["transactions"][transaction.id] = transaction_data
 
@@ -117,6 +103,6 @@ def parse_ofx():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    # Executa localmente (para testes)
-    # Em produção (ex: Railway, Heroku), a variável de ambiente $PORT é injetada.
-    app.run(debug=True, port=os.getenv("PORT", default=5000))
+    # Em produção (Railway), a variável de ambiente PORT é injetada automaticamente.
+    port = int(os.getenv("PORT", 5000))
+    app.run(debug=True, host="0.0.0.0", port=port)
