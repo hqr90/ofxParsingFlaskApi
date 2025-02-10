@@ -107,8 +107,9 @@ def parse_ofx():
                     "date": str(transaction.date),
                     "amount": str_to_float(str(transaction.amount)),
                     "memo": transaction.memo,
-                    "parcela": parcela_atual,
-                    "total_parcelas": total_parcelas
+                    "parcelaAtual": parcela_atual,
+                    "totalParcelas": total_parcelas,
+                    
                 }
 
                 pagFat = "Pagamento de fatura"
