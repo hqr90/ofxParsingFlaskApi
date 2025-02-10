@@ -64,7 +64,10 @@ def parse_ofx():
 
         # A resposta final de todos os dados
         result = []
-
+        notInclude = [
+                        "Pagamento de fatura",
+                        "Pagamento recebido"
+                     ]
         # Em alguns casos, ofx.accounts é uma lista de várias contas
         # Se for apenas uma, pode ser ofx.account (dependendo da versão do ofxparse).
         for account in ofx.accounts:
@@ -96,7 +99,8 @@ def parse_ofx():
                 }
                 account_data["transactions"][transaction.id] = transaction_data
 
-            result.append(account_data)
+            if(str(transaction.memo) not in notInclude):
+                result.append(account_data)
 
         return jsonify(result), 200
 
