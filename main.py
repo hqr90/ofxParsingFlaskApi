@@ -4,9 +4,6 @@ from io import BytesIO
 from functools import wraps
 from flask import Flask, request, jsonify
 from ofxparse import OfxParser
-from dotenv import load_dotenv
-
-load_dotenv()
 
 app = Flask(__name__)
 # ------------------------------------------
