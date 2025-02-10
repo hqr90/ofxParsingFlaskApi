@@ -99,9 +99,11 @@ def parse_ofx():
             for transaction in account.statement.transactions:
 
                 parcela_atual, total_parcelas = extrair_parcela(transaction.memo)
-
-                print(f"Parcela {parcela_atual} de {total_parcelas}")
-
+                
+                if parcela_atual is None or total_parcelas is None:
+                    parcela_atual = 1
+                    total_parcelas = 1
+                
                 transaction_data = {
                     "id": transaction.id,
                     "date": str(transaction.date),
