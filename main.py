@@ -90,16 +90,6 @@ def parse_ofx():
             def str_to_float(value: str):
                 return float(value.replace(",", "."))
 
-            def extrair_parcela(texto):
-                padrao = r"Parcela (\d+)/(\d+)"
-                match = re.search(padrao, texto)
-
-                if match:
-                    parcela_atual = int(match.group(1))
-                    total_parcelas = int(match.group(2))
-                    return parcela_atual, total_parcelas
-                return None, None
-
             for transaction in account.statement.transactions:
 
                 parcela_atual, total_parcelas = extrair_parcela(transaction.memo)
