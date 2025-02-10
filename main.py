@@ -4,7 +4,7 @@ from io import BytesIO
 from functools import wraps
 from flask import Flask, request, jsonify
 from ofxparse import OfxParser
-
+print("Variáveis de ambiente:", os.environ)
 app = Flask(__name__)
 # ------------------------------------------
 # Definição da SECRET KEY (token de acesso)
