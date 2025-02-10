@@ -1,15 +1,51 @@
 import base64
+import os
 from io import BytesIO
+from functools import wraps
 from flask import Flask, request, jsonify
 from ofxparse import OfxParser
 
 app = Flask(__name__)
 
+# ------------------------------------------
+# Definição da SECRET KEY (token de acesso)
+# ------------------------------------------
+# Em produção, você deve usar uma variável de ambiente:
+# export MY_SECRET_TOKEN='uma_chave_bem_grande_e_secreta'
+# gere uma chave aleatória:
+# print(os.urandom(24).hex())
+
+MY_SECRET_TOKEN = "a7d88d0a141163f171cb27d6fa5d000969e6c490a01dd7c4"
+
+
+# ------------------------------------------
+# Decorador para exigir o token no cabeçalho
+# ------------------------------------------
+def require_auth(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # Pega o token que vem no cabeçalho "X-API-KEY"
+        token = request.headers.get("X-API-KEY")
+
+        # Verifica se está presente e se é igual ao configurado
+        if not token or token != MY_SECRET_TOKEN:
+            return jsonify({"error": "Unauthorized"}), 401
+
+        # Se estiver tudo certo, executa a função original
+        return func(*args, **kwargs)
+
+    return wrapper
+
+# Rota inicial só para teste
 @app.route('/')
 def index():
     return "Flask OFX Parser API is running!"
 
+# ------------------------------------------
+# Rota protegida por token
+# ------------------------------------------
 @app.route('/parse_ofx', methods=['POST'])
+@require_auth  # <--- Aqui aplicamos a verificação
 def parse_ofx():
     """
     Espera um JSON com a seguinte estrutura:
@@ -33,13 +69,14 @@ def parse_ofx():
 
         # A resposta final de todos os dados
         result = []
+
         # Em alguns casos, ofx.accounts é uma lista de várias contas
         # Se for apenas uma, pode ser ofx.account (dependendo da versão do ofxparse).
         for account in ofx.accounts:
             account_data = {
                 "account_id": account.account_id,
-                "routing_number": account.routing_number,
-                "branch_id": account.branch_id,
+                # "routing_number": account.routing_number,
+                # "branch_id": account.branch_id,
                 "institution": {
                     "organization": account.institution.organization if account.institution else None,
                     "fid": account.institution.fid if account.institution else None
@@ -51,24 +88,27 @@ def parse_ofx():
                 },
                 "transactions": {}
             }
-            def str_to_float(value:str):
-                 return float(value.replace(",", "."))
+
+            # Função auxiliar para converter string em float
+            def str_to_float(value: str):
+                return float(value.replace(",", "."))
+
             for transaction in account.statement.transactions:
                 transaction_data = {
-                    "payee": transaction.payee,
-                    "type": transaction.type,
+                    # "payee": transaction.payee,
+                    # "type": transaction.type,
                     "date": str(transaction.date),
-                    "user_date": str(transaction.user_date),
+                    # "user_date": str(transaction.user_date),
                     "amount": str_to_float(str(transaction.amount)),
                     "category": str(transaction.memo).split(" - ")[0],
                     "memo": transaction.memo,
-                    "describe": str(transaction.memo) + " " + str(transaction.amount),
-                    "sic": transaction.sic,
-                    "mcc": transaction.mcc,
-                    "checknum": transaction.checknum
+                    # "describe": str(transaction.memo) + " " + str(transaction.amount),
+                    # "sic": transaction.sic,
+                    # "mcc": transaction.mcc,
+                    # "checknum": transaction.checknum
                 }
                 account_data["transactions"][transaction.id] = transaction_data
-                
+
             result.append(account_data)
 
         return jsonify(result), 200
@@ -76,10 +116,7 @@ def parse_ofx():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
 if __name__ == '__main__':
     # Executa localmente (para testes)
-    # Railway definirá a porta via variável de ambiente $PORT,
-    # então aqui podemos ficar fixo em 5000, pois em produção
-    # o Railway já injeta esse valor.
+    # Em produção (ex: Railway, Heroku), a variável de ambiente $PORT é injetada.
     app.run(debug=True, port=os.getenv("PORT", default=5000))
